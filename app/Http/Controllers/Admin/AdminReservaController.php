@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Reserva;
 use App\Models\Recinto;
 use Illuminate\Http\Request;
+use App\Mail\ReservaAprobada;
+use App\Mail\ReservaRechazada;
+use Illuminate\Support\Facades\Mail;
 
 class AdminReservaController extends Controller
 {
@@ -50,9 +53,14 @@ class AdminReservaController extends Controller
         
         $reserva->aprobar(auth()->id(), $request->observaciones);
         
-        // TODO: Enviar correo de aprobación
+        // Enviar correo de aprobación
+        try {
+            Mail::to($reserva->email)->send(new ReservaAprobada($reserva));
+        } catch (\Exception $e) {
+            \Log::error('Error enviando correo de aprobación: ' . $e->getMessage());
+        }
         
-        return back()->with('success', 'Reserva aprobada exitosamente');
+        return back()->with('success', 'Reserva aprobada y notificación enviada');
     }
     
     public function rechazar(Request $request, Reserva $reserva)
@@ -67,8 +75,13 @@ class AdminReservaController extends Controller
         
         $reserva->rechazar(auth()->id(), $request->motivo_rechazo);
         
-        // TODO: Enviar correo de rechazo
+        // Enviar correo de rechazo
+        try {
+            Mail::to($reserva->email)->send(new ReservaRechazada($reserva));
+        } catch (\Exception $e) {
+            \Log::error('Error enviando correo de rechazo: ' . $e->getMessage());
+        }
         
-        return back()->with('success', 'Reserva rechazada exitosamente');
+        return back()->with('success', 'Reserva rechazada y notificación enviada');
     }
 }

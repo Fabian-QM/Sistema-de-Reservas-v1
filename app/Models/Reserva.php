@@ -12,6 +12,7 @@ class Reserva extends Model
 
     protected $fillable = [
         'recinto_id',
+        'deporte',
         'rut',
         'nombre_organizacion',
         'representante_nombre',
@@ -19,6 +20,8 @@ class Reserva extends Model
         'email_confirmacion',
         'telefono',
         'direccion',
+        'region',
+        'comuna',
         'cantidad_personas',
         'fecha_reserva',
         'hora_inicio',

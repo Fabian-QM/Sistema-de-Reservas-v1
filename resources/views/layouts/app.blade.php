@@ -10,6 +10,9 @@
     
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    
+    <!-- Vite - AGREGADO -->
+    @vite(['resources/js/app.js'])
 </head>
 <body class="bg-gray-100 min-h-screen">
     <!-- Header -->

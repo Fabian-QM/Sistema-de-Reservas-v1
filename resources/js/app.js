@@ -25,3 +25,5 @@ createInertiaApp({
         color: '#4B5563',
     },
 });
+
+import './formulario-reserva.js';

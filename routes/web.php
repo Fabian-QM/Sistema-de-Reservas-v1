@@ -1,27 +1,63 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use Illuminate\Foundation\Application;
+use App\Http\Controllers\CalendarioController;
+use App\Http\Controllers\ReservaController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Admin\AdminReservaController;
+use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
+/*
+|--------------------------------------------------------------------------
+| Rutas Públicas (sin autenticación requerida)
+|--------------------------------------------------------------------------
+*/
+
+// Página principal - Calendario de disponibilidad
+Route::get('/', [CalendarioController::class, 'index'])->name('calendario');
+Route::get('/calendario', [CalendarioController::class, 'index']);
+
+// API para consultar disponibilidad (usado por JavaScript)
+Route::get('/calendario/disponibilidad', [CalendarioController::class, 'disponibilidad'])
+    ->name('calendario.disponibilidad');
+
+// Reservas públicas
+Route::get('/reservas/crear/{recinto}', [ReservaController::class, 'create'])
+    ->name('reservas.create');
+Route::post('/reservas', [ReservaController::class, 'store'])
+    ->name('reservas.store');
+Route::get('/reservas/{reserva}', [ReservaController::class, 'show'])
+    ->name('reservas.show');
+
+/*
+|--------------------------------------------------------------------------
+| Autenticación Administrativa
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/admin/login', [AuthController::class, 'showLogin'])->name('login');
+Route::post('/admin/login', [AuthController::class, 'login']);
+Route::post('/admin/logout', [AuthController::class, 'logout'])->name('logout');
+
+/*
+|--------------------------------------------------------------------------
+| Panel Administrativo (requiere autenticación)
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+    
+    // Dashboard principal del administrador
+    Route::get('/dashboard', [DashboardController::class, 'index'])
+        ->name('dashboard');
+    
+    // Gestión de reservas
+    Route::get('/reservas', [AdminReservaController::class, 'index'])
+        ->name('reservas.index');
+    Route::get('/reservas/{reserva}', [AdminReservaController::class, 'show'])
+        ->name('reservas.show');
+    Route::post('/reservas/{reserva}/aprobar', [AdminReservaController::class, 'aprobar'])
+        ->name('reservas.aprobar');
+    Route::post('/reservas/{reserva}/rechazar', [AdminReservaController::class, 'rechazar'])
+        ->name('reservas.rechazar');
 });
-
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
-
-require __DIR__.'/auth.php';
